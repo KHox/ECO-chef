@@ -24,6 +24,8 @@ main.collapsed{grid-template-columns:44px 1fr}@media(max-width:850px){main,main.
 #modal{position:fixed;inset:0;background:#000a;z-index:200;display:grid;place-items:center}#modal[hidden]{display:none}.mbox{background:var(--pn);border-radius:10px;padding:16px;width:min(620px,94vw);max-height:86vh;overflow:auto}.mbox h3{margin:0 0 8px}.mbox .row{margin:10px 0}.mbox td,.mbox th{text-align:left}#toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#000d;padding:8px 14px;border-radius:8px;z-index:300}
 .cooked{border-color:var(--vi)!important}.ckd,.ck{color:var(--vi)}.ck{font-size:14px}.chead{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}#ctog{color:var(--tx);font-size:14px}
 #cat.col{padding:8px 4px}.col .chead{flex-direction:column;gap:10px;margin:0}.col .chead b{writing-mode:vertical-rl}.col #q,.col .who,.col #catlist{display:none}
+.loading{display:flex;align-items:center;justify-content:center;gap:12px;min-height:50vh;color:var(--mu);font-size:15px}.loading i{width:20px;height:20px;border:3px solid #3a4358;border-top-color:var(--ac);border-radius:50%;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+table img,table .ph{width:20px;height:20px;object-fit:contain;vertical-align:middle;margin-right:2px}table .ph{display:inline-grid;font-size:13px}
 .sb{position:sticky;top:0;z-index:2;background:var(--pn);padding:10px 0 6px}
 input,select{background:#0c0f14;color:var(--tx);border:1px solid #3a4358;border-radius:6px;padding:6px 8px}
 .food{display:flex;align-items:center;gap:6px;background:var(--pn2);border-radius:6px;padding:1px 5px;margin:2px 0;line-height:1.15;cursor:grab;border:1px solid transparent}
@@ -49,7 +51,7 @@ const RAW=`Baked Agave|14|2|4|8|700;Pupusas|6|11|9|14|900;Vegetable Medley|8|4|7
 const FOODS={};RAW.split(';').forEach(s=>{const a=s.split('|');FOODS[a[0]]={n:a[0],c:+a[1],p:+a[2],f:+a[3],v:+a[4],k:+a[5]}});
 const CATS=[['fav','Favorite (1)'],['del','Delicious'],['good','Good'],['unk','Unknown']];
 const $=s=>document.querySelector(s),esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-let S={people:[],guests:[],picks:{},cooked:{}},tab=1,filter='',ONLINE=false,ME=null,sb=null,L;
+let S={people:[],guests:[],picks:{},cooked:{}},tab=1,filter='',ONLINE=false,LOADING=false,ME=null,sb=null,L;
 try{const l=localStorage.getItem('ecochef');if(l)S=JSON.parse(l)}catch(e){}
 S.cooked=S.cooked||{};L=S;
 const save=()=>{if(ONLINE)return;try{localStorage.setItem('ecochef',JSON.stringify(S))}catch(e){}};
@@ -95,7 +97,7 @@ function renderDinner(){
  h+=`<div class=panel style="margin-top:10px"><h3 style="margin:0 0 6px">🛒 Final dish list</h3>`+(names.length?`<table><tr><th>Dish</th><th>Qty</th><th>Cooked</th>${NH.replace('<th>kcal</th>','<th>kcal/each</th>')}<th>Total kcal</th></tr>`+names.map(n=>`<tr data-food="${esc(n)}"><td>${icon(n)} ${esc(n)}</td><td><b>${cnt[n]}</b></td><td>${gs.filter(p=>(S.picks[p.id]||[]).includes(n)&&S.cooked[p.id+'|'+n]).length}/${cnt[n]}</td>${nut(sum([n]))}<td>${cnt[n]*FOODS[n].k}</td></tr>`).join('')+`</table><p>Total servings: <b>${names.reduce((a,n)=>a+cnt[n],0)}</b>, kcal: <b>${names.reduce((a,n)=>a+cnt[n]*FOODS[n].k,0)}</b></p>`:'<i style="color:var(--mu)">Select guests and dishes</i>')+'</div>';
  $('#view').innerHTML=h;
 }
-function render(){renderCat();tab===1?renderPeople():renderDinner();$('#t1').className=tab===1?'on':'';$('#t2').className=tab===2?'on':'';applySearch();updHead()}
+function render(){renderCat();if(LOADING)$('#view').innerHTML='<div class=loading><i></i>Loading online data…</div>';else tab===1?renderPeople():renderDinner();$('#t1').className=tab===1?'on':'';$('#t2').className=tab===2?'on':'';applySearch();updHead()}
 $('#t1').onclick=()=>{tab=1;render()};$('#t2').onclick=()=>{tab=2;render()};
 $('#q').oninput=e=>{filter=e.target.value;renderCat();applySearch()};
 document.addEventListener('click',e=>{const t=e.target;let d;
@@ -157,12 +159,12 @@ async function connect(){
  sb=window.supabase.createClient('https://'+SB_PROJECT_ID+'.supabase.co',SB_KEY);return true}
 async function reload(){
  const r=await Promise.all(['people','prefs','dinner_guests','dinner_picks'].map(t=>sb.from(t).select('*')));
- const er=r.find(x=>x.error);if(er){toast(er.error.message);return}
+ const er=r.find(x=>x.error);if(er){toast(er.error.message);LOADING=false;render();return}
  const [a,b,c,d]=r.map(x=>x.data),{data:{user}}=await sb.auth.getUser();
  const P=a.map(x=>({id:x.id,name:x.name,admin:x.is_admin,claimed:!!x.user_id,uid:x.user_id,cats:{fav:[],del:[],good:[],unk:[]}})),by=Object.fromEntries(P.map(p=>[p.id,p]));
  b.forEach(x=>by[x.person_id]&&FOODS[x.food]&&by[x.person_id].cats[x.cat].push(x.food));
  const picks={},cooked={};d.forEach(x=>{if(!FOODS[x.food])return;(picks[x.person_id]=picks[x.person_id]||[]).push(x.food);if(x.cooked)cooked[x.person_id+'|'+x.food]=1});
- S={people:P,guests:c.map(x=>x.person_id),picks,cooked};const m=user&&P.find(p=>p.uid===user.id);ME=m?{pid:m.id,name:m.name,admin:m.admin}:null;render()}
+ LOADING=false;S={people:P,guests:c.map(x=>x.person_id),picks,cooked};const m=user&&P.find(p=>p.uid===user.id);ME=m?{pid:m.id,name:m.name,admin:m.admin}:null;render()}
 async function q(pr){const r=await pr;if(r.error){toast(r.error.message);return null}await reload();return r.data===null?true:r.data}
 const rpc=(fn,a)=>q(sb.rpc(fn,a));
 // optimistic updates: change the UI at once, send to the server in the background (in order); on error -> message + resync
@@ -184,9 +186,11 @@ const act={
  cook(id,n){const k=id+'|'+n,v=!S.cooked[k],f=()=>{if(v)S.cooked[k]=1;else delete S.cooked[k]};if(ONLINE)return opt(f,()=>sb.from('dinner_picks').update({cooked:v}).eq('person_id',sidOf(id)).eq('food',n));f();save();render()}
 };
 async function setMode(m){
- if(m==='online'){try{if(!await connect())return;ONLINE=true;S=emptyS();ME=null;const{data:{session}}=await sb.auth.getSession();if(session)await reload();else{render();showAuth()}}catch(e){ONLINE=false;S=L;toast(e.message);render();return}}
- else{ONLINE=false;ME=null;S=L}
- try{localStorage.setItem('ecochef_mode',m)}catch(e){}render()}
+ try{localStorage.setItem('ecochef_mode',m)}catch(e){}
+ if(m!=='online'){ONLINE=false;LOADING=false;ME=null;S=L;render();return}
+ ONLINE=true;LOADING=true;S=emptyS();ME=null;render();  // instant: button lit + loading placeholder
+ const back=msg=>{ONLINE=false;LOADING=false;ME=null;S=L;try{localStorage.setItem('ecochef_mode','local')}catch(e){}if(msg)toast(msg);render()};
+ try{if(!await connect())return back();const{data:{session}}=await sb.auth.getSession();if(session)await reload();else{LOADING=false;render();showAuth()}}catch(e){back(e.message)}}
 function showAuth(){
  modal(`<h3>Online account</h3><div class=row><b>Sign in</b><br><input id=an placeholder="Name" maxlength=24> <input id=ap type=password placeholder="Password"> <button class="btn pri" id=ain>Sign in</button></div><div class=row><b>New here?</b> Enter only a name: a random password is generated and you are signed in right away.<br><input id=cn placeholder="Name" maxlength=24> <button class=btn id=cre>Create account</button></div><div id=mm></div><div class=row><button class=btn id=mc>Close</button></div>`);
  $('#ain').onclick=async()=>{const n=$('#an').value.trim(),pw=$('#ap').value;if(!n||!pw)return mmsg('Enter name and password');const{error}=await sb.auth.signInWithPassword({email:await emailFor(n),password:pw});if(error)return mmsg(error.message==='Invalid login credentials'?'Wrong name or password':error.message);closeModal();await reload()};
@@ -211,6 +215,5 @@ const setCat=c=>{$('#cat').classList.toggle('col',c);document.querySelector('mai
 $('#ctog').onclick=()=>setCat(!$('#cat').classList.contains('col'));
 try{if(localStorage.getItem('ecochef_cat'))setCat(true)}catch(e){}
 const sh=()=>document.documentElement.style.setProperty('--hh',document.querySelector('header').offsetHeight+'px');sh();addEventListener('resize',sh);
-render();
-if(localStorage.getItem('ecochef_mode')==='online')setMode('online');
+if(localStorage.getItem('ecochef_mode')==='online')setMode('online');else render();
 </script></body></html>
