@@ -84,7 +84,7 @@ function allPrefs(p){return CATS.flatMap(([k])=>p.cats[k])}
 function renderDinner(){
  const gs=S.guests.map(id=>S.people.find(p=>p.id===id)).filter(Boolean).sort(byName);
  const pickRow=(n,pid,sel)=>{const f=FOODS[n],ck=S.cooked[pid+'|'+n];return `<div class="food pick ${sel?'sel':''} ${sel&&ck?'cooked':''}" data-food="${esc(n)}" data-pk="${pid}" title="${tip(f)}">${icon(n)}<span class=n>${esc(n)}<br><small>${tipH(f)}</small></span>${sel?(isAdm()?`<button class="x ck" data-ck="${pid}|${esc(n)}" title="Mark as cooked">${ck?'✔':'○'}</button>`:(ck?'<span class=ckd title=cooked>✔</span>':'')):''}</div>`};
- let h=`<div class=panel><b>Guests:</b><div class=chips>`+(S.people.slice().sort(byName).filter(p=>isAdm()||S.guests.includes(p.id)).map(p=>`<span class="chip ${S.guests.includes(p.id)?'on':''}" data-g="${p.id}">${esc(p.name)}</span>`).join('')||'<i style="color:var(--mu)">Add people first in the “People &amp; tastes” tab</i>')+`</div></div><div class=grid2 style="margin-top:10px">`;
+ let h=`<div class=panel>${isAdm()?'<button class="btn" id="rst" style="float:right" title="Clear guests, picked dishes and cooked marks">Reset</button>':''}<b>Guests:</b><div class=chips>`+(S.people.slice().sort(byName).filter(p=>isAdm()||S.guests.includes(p.id)).map(p=>`<span class="chip ${S.guests.includes(p.id)?'on':''}" data-g="${p.id}">${esc(p.name)}</span>`).join('')||'<i style="color:var(--mu)">Add people first in the “People &amp; tastes” tab</i>')+`</div></div><div class=grid2 style="margin-top:10px">`;
  gs.forEach(p=>{const pk=S.picks[p.id]||[];const t=sum(pk);const prefs=allPrefs(p);
   const grp=(title,arr)=>arr.length?`<div class=gt>${title}</div><div class=items>`+arr.map(n=>pickRow(n,p.id,pk.includes(n))).join('')+'</div>':'';
   h+=`<div class=panel><h3 style="margin:0 0 4px">${esc(p.name)} <small style="color:var(--mu)">dishes: ${pk.length}${pk.length>3?' <span class=warn>(more than 3!)</span>':''}</small></h3>`
@@ -107,6 +107,7 @@ document.addEventListener('click',e=>{const t=e.target;let d;
  else if(d=t.closest('[data-g]')){if(isAdm())act.guest(d.dataset.g)}
  else if(d=t.closest('[data-ck]')){const[id,n]=d.dataset.ck.split('|');if(isAdm())act.cook(id,n)}
  else if(d=t.closest('[data-pk]')){if(isAdm())act.pick(d.dataset.pk,d.dataset.food)}
+ else if(d=t.closest('#rst')){if(isAdm()&&confirm('Reset the dinner party?\nAll guests, picked dishes and cooked marks will be cleared.'))act.reset()}
  else if(d=t.closest('[data-undo]')){rpc('undo_log',{p_log:+d.dataset.undo}).then(r=>r&&showLog())}});
 document.addEventListener('change',e=>{const id=e.target.dataset.any;if(id&&e.target.value&&isAdm())act.pick(id,e.target.value,true)});
 // hover: highlight the same dish only in OTHER people's lists + show who has it
@@ -157,7 +158,7 @@ async function connect(){
  if(!SB_PROJECT_ID){toast('Online is not configured yet: SB_PROJECT_ID is empty in the page');return false}
  if(!window.supabase)await new Promise((ok,no)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js';s.onload=ok;s.onerror=()=>no(new Error('Could not load the Supabase library (offline?)'));document.head.appendChild(s)});
  sb=window.supabase.createClient('https://'+SB_PROJECT_ID+'.supabase.co',SB_KEY);return true}
-async function reload(silent){
+async function reload(silent){const m0=MUT;
  const r=await Promise.all(['people','prefs','dinner_guests','dinner_picks'].map(t=>sb.from(t).select('*')));
  const er=r.find(x=>x.error);if(er){toast(er.error.message);LOADING=false;render();return}
  const [a,b,c,d]=r.map(x=>x.data),{data:{user}}=await sb.auth.getUser();
@@ -165,6 +166,7 @@ async function reload(silent){
  b.forEach(x=>by[x.person_id]&&FOODS[x.food]&&by[x.person_id].cats[x.cat].push(x.food));
  const picks={},cooked={};d.forEach(x=>{if(!FOODS[x.food])return;(picks[x.person_id]=picks[x.person_id]||[]).push(x.food);if(x.cooked)cooked[x.person_id+'|'+x.food]=1});
  const N={people:P,guests:c.map(x=>x.person_id),picks,cooked},m=user&&P.find(p=>p.uid===user.id),me=m?{pid:m.id,name:m.name,admin:m.admin}:null;
+ if(silent&&(PEND||MUT!==m0)){syncSoon(600);return}   // stale: a local change happened while this was loading
  if(silent&&!LOADING&&sig(N)===sig(S)&&JSON.stringify(me)===JSON.stringify(ME))return;   // nothing changed -> no re-render
  const nm=$('#nm'),keep=nm&&{v:nm.value,f:document.activeElement===nm};
  LOADING=false;S=N;ME=me;render();
@@ -173,8 +175,8 @@ async function reload(silent){
 async function q(pr){const r=await pr;if(r.error){toast(r.error.message);return null}await reload();return r.data===null?true:r.data}
 const rpc=(fn,a)=>q(sb.rpc(fn,a));
 // optimistic updates: change the UI at once, send to the server in the background (in order); on error -> message + resync
-let QCH=Promise.resolve(),PEND=0,RT=null,rtT=null;
-function opt(apply,req,after){apply();render();PEND++;const run=async()=>{try{const r=await req();if(r.error){toast(r.error.message);await reload()}else if(after)after();return r}finally{PEND--}};return QCH=QCH.then(run,run)}
+let QCH=Promise.resolve(),PEND=0,MUT=0,DIRTY=false,RT=null,rtT=null;
+function opt(apply,req,after){MUT++;apply();render();PEND++;const run=async()=>{try{const r=await req();if(r.error){toast(r.error.message);DIRTY=true}else if(after)after();return r}finally{PEND--;if(!PEND&&DIRTY){DIRTY=false;reload()}}};return QCH=QCH.then(run,run)}
 const sid=p=>p.sid||p.id,sidOf=id=>{const p=S.people.find(p=>p.id===id);return p?sid(p):id};
 // live updates: Supabase Realtime pushes a "something changed" signal, then we re-read quietly (+ slow polling as a fallback)
 const sig=s=>JSON.stringify([s.people.map(p=>[p.sid||p.id,p.name,!!p.admin,!!p.claimed,Object.values(p.cats).map(a=>[...a].sort())]).sort(),[...s.guests].sort(),Object.entries(s.picks).map(([k,v])=>[k,[...v].sort()]).filter(x=>x[1].length).sort(),Object.keys(s.cooked).sort()]);
@@ -195,6 +197,7 @@ const act={
  toggleAdmin(id){const p=S.people.find(p=>p.id===id);if(!ONLINE||!p)return;const v=!p.admin;opt(()=>{p.admin=v},()=>sb.rpc('set_admin',{p_person:sid(p),p_admin:v}))},
  guest(id){const has=S.guests.includes(id),f=()=>{S.guests=has?S.guests.filter(g=>g!==id):[...S.guests,id]};if(ONLINE)return opt(f,()=>has?sb.from('dinner_guests').delete().eq('person_id',sidOf(id)):sb.from('dinner_guests').insert({person_id:sidOf(id)}));f();save();render()},
  pick(id,n){const a=S.picks[id]||[],has=a.includes(n),f=()=>{if(has){S.picks[id]=a.filter(x=>x!==n);delete S.cooked[id+'|'+n]}else S.picks[id]=[...a,n]};if(ONLINE)return opt(f,()=>has?sb.from('dinner_picks').delete().eq('person_id',sidOf(id)).eq('food',n):sb.from('dinner_picks').upsert({person_id:sidOf(id),food:n}));f();save();render()},
+ reset(){const f=()=>{S.guests=[];S.picks={};S.cooked={}},ALL='00000000-0000-0000-0000-000000000000';if(ONLINE)return opt(f,async()=>{const a=await sb.from('dinner_guests').delete().neq('person_id',ALL);return a.error?a:sb.from('dinner_picks').delete().neq('person_id',ALL)});f();save();render()},
  cook(id,n){const k=id+'|'+n,v=!S.cooked[k],f=()=>{if(v)S.cooked[k]=1;else delete S.cooked[k]};if(ONLINE)return opt(f,()=>sb.from('dinner_picks').update({cooked:v}).eq('person_id',sidOf(id)).eq('food',n));f();save();render()}
 };
 async function setMode(m){
