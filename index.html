@@ -157,20 +157,32 @@ async function connect(){
  if(!SB_PROJECT_ID){toast('Online is not configured yet: SB_PROJECT_ID is empty in the page');return false}
  if(!window.supabase)await new Promise((ok,no)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js';s.onload=ok;s.onerror=()=>no(new Error('Could not load the Supabase library (offline?)'));document.head.appendChild(s)});
  sb=window.supabase.createClient('https://'+SB_PROJECT_ID+'.supabase.co',SB_KEY);return true}
-async function reload(){
+async function reload(silent){
  const r=await Promise.all(['people','prefs','dinner_guests','dinner_picks'].map(t=>sb.from(t).select('*')));
  const er=r.find(x=>x.error);if(er){toast(er.error.message);LOADING=false;render();return}
  const [a,b,c,d]=r.map(x=>x.data),{data:{user}}=await sb.auth.getUser();
  const P=a.map(x=>({id:x.id,name:x.name,admin:x.is_admin,claimed:!!x.user_id,uid:x.user_id,cats:{fav:[],del:[],good:[],unk:[]}})),by=Object.fromEntries(P.map(p=>[p.id,p]));
  b.forEach(x=>by[x.person_id]&&FOODS[x.food]&&by[x.person_id].cats[x.cat].push(x.food));
  const picks={},cooked={};d.forEach(x=>{if(!FOODS[x.food])return;(picks[x.person_id]=picks[x.person_id]||[]).push(x.food);if(x.cooked)cooked[x.person_id+'|'+x.food]=1});
- LOADING=false;S={people:P,guests:c.map(x=>x.person_id),picks,cooked};const m=user&&P.find(p=>p.uid===user.id);ME=m?{pid:m.id,name:m.name,admin:m.admin}:null;render()}
+ const N={people:P,guests:c.map(x=>x.person_id),picks,cooked},m=user&&P.find(p=>p.uid===user.id),me=m?{pid:m.id,name:m.name,admin:m.admin}:null;
+ if(silent&&!LOADING&&sig(N)===sig(S)&&JSON.stringify(me)===JSON.stringify(ME))return;   // nothing changed -> no re-render
+ const nm=$('#nm'),keep=nm&&{v:nm.value,f:document.activeElement===nm};
+ LOADING=false;S=N;ME=me;render();
+ if(keep){const n2=$('#nm');if(n2){n2.value=keep.v;if(keep.f)n2.focus({preventScroll:true})}}
+ if(!RT)startRT()}
 async function q(pr){const r=await pr;if(r.error){toast(r.error.message);return null}await reload();return r.data===null?true:r.data}
 const rpc=(fn,a)=>q(sb.rpc(fn,a));
 // optimistic updates: change the UI at once, send to the server in the background (in order); on error -> message + resync
-let QCH=Promise.resolve();
-function opt(apply,req,after){apply();render();const run=async()=>{const r=await req();if(r.error){toast(r.error.message);await reload()}else if(after)after();return r};return QCH=QCH.then(run,run)}
+let QCH=Promise.resolve(),PEND=0,RT=null,rtT=null;
+function opt(apply,req,after){apply();render();PEND++;const run=async()=>{try{const r=await req();if(r.error){toast(r.error.message);await reload()}else if(after)after();return r}finally{PEND--}};return QCH=QCH.then(run,run)}
 const sid=p=>p.sid||p.id,sidOf=id=>{const p=S.people.find(p=>p.id===id);return p?sid(p):id};
+// live updates: Supabase Realtime pushes a "something changed" signal, then we re-read quietly (+ slow polling as a fallback)
+const sig=s=>JSON.stringify([s.people.map(p=>[p.sid||p.id,p.name,!!p.admin,!!p.claimed,Object.values(p.cats).map(a=>[...a].sort())]).sort(),[...s.guests].sort(),Object.entries(s.picks).map(([k,v])=>[k,[...v].sort()]).filter(x=>x[1].length).sort(),Object.keys(s.cooked).sort()]);
+function syncSoon(ms){clearTimeout(rtT);rtT=setTimeout(syncNow,ms||400)}
+function syncNow(){if(!ONLINE||!sb||LOADING||document.hidden)return;if(PEND||DR)return syncSoon(1000);reload(true)}
+function startRT(){if(RT||!sb)return;RT=sb.channel('eco-sync');['people','prefs','dinner_guests','dinner_picks'].forEach(t=>RT.on('postgres_changes',{event:'*',schema:'public',table:t},()=>syncSoon()));RT.subscribe()}
+function stopRT(){clearTimeout(rtT);if(RT&&sb)sb.removeChannel(RT);RT=null}
+setInterval(()=>{if(ONLINE&&ME)syncNow()},45000);document.addEventListener('visibilitychange',()=>{if(!document.hidden&&ONLINE&&ME)syncNow()});
 const act={
  place(p,n,c){if(!canEdit(p))return;const f=()=>placeFood(p,n,c);if(ONLINE)return opt(f,()=>sb.rpc('set_pref',{p_person:sid(p),p_food:n,p_cat:c}));f();save();render()},
  remove(p,k,n){if(!canEdit(p))return;const f=()=>{p.cats[k]=p.cats[k].filter(x=>x!==n)};if(ONLINE)return opt(f,()=>sb.rpc('set_pref',{p_person:sid(p),p_food:n,p_cat:null}));f();save();render()},
@@ -187,7 +199,7 @@ const act={
 };
 async function setMode(m){
  try{localStorage.setItem('ecochef_mode',m)}catch(e){}
- if(m!=='online'){ONLINE=false;LOADING=false;ME=null;S=L;render();return}
+ if(m!=='online'){stopRT();ONLINE=false;LOADING=false;ME=null;S=L;render();return}
  ONLINE=true;LOADING=true;S=emptyS();ME=null;render();  // instant: button lit + loading placeholder
  const back=msg=>{ONLINE=false;LOADING=false;ME=null;S=L;try{localStorage.setItem('ecochef_mode','local')}catch(e){}if(msg)toast(msg);render()};
  try{if(!await connect())return back();const{data:{session}}=await sb.auth.getSession();if(session)await reload();else{LOADING=false;render();showAuth()}}catch(e){back(e.message)}}
@@ -201,7 +213,7 @@ function showAcct(pw){if(!ME)return showAuth();
  modal(`<h3>${esc(ME.name)}${ME.admin?' (admin)':''}</h3>${pw?`<div class=row>Your generated password: <b>${esc(pw)}</b> — save it. You can change it below.</div>`:''}<div class=row><input id=np type=password placeholder="New password (min. 6)"> <button class=btn id=cp>Change password</button></div><div class=row><button class=btn id=cl>Clone online → local</button> ${ME.admin?'<button class=btn id=mg>Upload local → online</button> <button class=btn id=lg>Edit log</button>':''}</div><div class=row><button class=btn id=lo>Sign out</button> <button class=btn id=mc>Close</button></div><div id=mm></div>`);
  $('#cp').onclick=async()=>{const v=$('#np').value;if(v.length<6)return mmsg('At least 6 characters');const{error}=await sb.auth.updateUser({password:v});if(error)return mmsg(error.message);$('#np').value='';const m=$('#mm');m.className='';m.textContent='Password changed'};
  $('#cl').onclick=cloneLocal;if($('#mg'))$('#mg').onclick=migrate;if($('#lg'))$('#lg').onclick=showLog;
- $('#lo').onclick=async()=>{await sb.auth.signOut();ME=null;S=emptyS();render();showAuth()}}
+ $('#lo').onclick=async()=>{stopRT();await sb.auth.signOut();ME=null;S=emptyS();render();showAuth()}}
 function cloneLocal(){if(!confirm('Replace your LOCAL database with a copy of the online one?'))return;
  L={people:S.people.map(p=>({id:p.id,name:p.name,cats:JSON.parse(JSON.stringify(p.cats))})),guests:[...S.guests],picks:JSON.parse(JSON.stringify(S.picks)),cooked:{...S.cooked}};
  try{localStorage.setItem('ecochef',JSON.stringify(L))}catch(e){}closeModal();toast('Online data cloned to the local database')}
