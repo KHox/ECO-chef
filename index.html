@@ -37,7 +37,9 @@ table img,table .ph{width:20px;height:20px;object-fit:contain;vertical-align:mid
 .chead{cursor:pointer;user-select:none}
 @media(max-width:850px){#cat{position:static;max-height:55vh}#cat.col{padding:6px 10px}.col .chead{flex-direction:row;justify-content:space-between;align-items:center}.col .chead b{writing-mode:horizontal-tb}}
 .zt{position:absolute;top:2px;right:3px;width:16px;height:16px;padding:0;border:0;background:none;color:var(--mu);cursor:pointer;font-size:12px;line-height:16px}.zt:hover{color:var(--tx)}.zl{display:none;font-size:12px;color:var(--mu);margin-bottom:3px}@media(max-width:900px){.zl{display:block}}
-.ico img{display:block}.phead .btn{padding:1px 7px;font-size:12px;margin-left:6px}@media(max-width:900px){.phead{display:grid;grid-template-columns:1fr}.phead span:not(:first-child){display:none}}
+.ico img{display:block}.phead .btn{padding:1px 7px;font-size:12px;margin-left:6px}@media(max-width:900px){.phead{display:flex;flex-wrap:wrap;gap:4px 12px}.phead span:first-child{display:none}}
+.ico.hl,.ico.hl2{border-radius:6px;background:var(--ac)!important;box-shadow:0 0 0 2px var(--ac),0 0 10px var(--ac)}
+.food[data-mine=fav]{box-shadow:inset 4px 0 0 #f2c94c;background:#3a3622}.food[data-mine=del]{box-shadow:inset 4px 0 0 #e56bd0;background:#3a2438}.food[data-mine=good]{box-shadow:inset 4px 0 0 #3ecf8e;background:#1d3a2f}.food[data-mine=ok]{box-shadow:inset 4px 0 0 #5aa9ff;background:#1f2f4a}.food[data-mine=unk]{box-shadow:inset 4px 0 0 #8f99ad;background:#2a2f3b}.leg{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:11px;color:var(--mu);margin:2px 0 6px}.leg i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:4px}
 .sb{position:sticky;top:0;z-index:2;background:var(--pn);padding:10px 0 6px}
 input,select{background:#0c0f14;color:var(--tx);border:1px solid #3a4358;border-radius:6px;padding:6px 8px}
 .food{display:flex;align-items:center;gap:6px;background:var(--pn2);border-radius:6px;padding:1px 5px;margin:2px 0;line-height:1.15;cursor:grab;border:1px solid transparent}
@@ -78,13 +80,15 @@ const NH='<th class=c>C</th><th class=p>P</th><th class=f>F</th><th class=v>V</t
 const tipH=f=>`<b class=c>C${f.c}</b> <b class=p>P${f.p}</b> <b class=f>F${f.f}</b> <b class=v>V${f.v}</b> · <b class=s>Σ${f.c+f.p+f.f+f.v}</b> · ${f.k} kcal`;
 const tip=f=>`C${f.c} P${f.p} F${f.f} V${f.v} · Σ${f.c+f.p+f.f+f.v} · ${f.k} kcal`;
 function foodRow(n,extra='',attrs=''){const f=FOODS[n];return `<div class="food" data-food="${esc(n)}" title="${tip(f)}" ${attrs}>${icon(n)}<span class=n>${esc(n)}<br><small>${tipH(f)}</small></span>${extra}</div>`}
-function renderCat(){const q=filter.toLowerCase();$('#catlist').innerHTML=Object.keys(FOODS).filter(n=>n.toLowerCase().includes(q)).sort().map(n=>foodRow(n)).join('')}
+const COL={"fav": "#f2c94c", "del": "#e56bd0", "good": "#3ecf8e", "ok": "#5aa9ff", "unk": "#8f99ad"};
+function renderCat(){const q=filter.toLowerCase(),me=ONLINE&&ME&&S.people.find(p=>p.id===ME.pid),mine={};if(me)CATS.forEach(([k])=>me.cats[k].forEach(n=>mine[n]=k));
+ $('#catlist').innerHTML=(me?`<div class=leg>${CATS.map(([k,t])=>`<span><i style="background:${COL[k]}"></i>${t.replace(' (1)','')}</span>`).join('')}</div>`:'')+Object.keys(FOODS).filter(n=>n.toLowerCase().includes(q)).sort().map(n=>foodRow(n,'',mine[n]?`data-mine="${mine[n]}"`:'')).join('')}
 function flash(id){const el=document.querySelector('[data-person="'+id+'"]');if(!el)return;el.scrollIntoView({behavior:'smooth',block:'center'});el.classList.remove('flash');void el.offsetWidth;el.classList.add('flash')}
 function renderPeople(){
  S.people.sort(byName);
- $('#view').innerHTML=`<div class="panel row" id="addbar"><input id="nm" placeholder="Person's name">${isAdm()?'<button class="btn pri" id="add">+ Add</button>':''}<button class="btn" id="find">Find</button><span id="msg" style="color:var(--mu)">Drag dishes from the list on the left into the columns. You can also drag between columns.</span></div><div class=people><div class=phead><span>Person<button class="btn" data-ccall title="Expand / collapse all categories for everyone">${allOpen()?'▾':'▸'} All</button></span>`+CATS.map(([k,t])=>`<span>${t}</span>`).join('')+`</div>`
+ $('#view').innerHTML=`<div class="panel row" id="addbar"><input id="nm" placeholder="Person's name">${isAdm()?'<button class="btn pri" id="add">+ Add</button>':''}<button class="btn" id="find">Find</button><span id="msg" style="color:var(--mu)">Drag dishes from the list on the left into the columns. You can also drag between columns.</span></div><div class=people><div class=phead><span>Person</span>`+CATS.map(([k,t])=>`<span>${t}<button class="btn" data-cca="${k}" title="Expand / collapse this category for everyone">${allOpenCat(k)?'▾':'▸'}</button></span>`).join('')+`</div>`
  +S.people.map(p=>`<div class="panel prow" data-person="${p.id}"><div class=pname>${pnameHtml(p)}</div>`
- +CATS.map(([k,t])=>`<div class=zone data-pid="${p.id}" data-cat="${k}"><button class="zt cc" data-cc="${p.id}|${k}" title="${CC[p.id+'|'+k]?'Collapse':'Expand'} — ${p.cats[k].length} dishes">${CC[p.id+'|'+k]?'▾':'▸'}</button><div class=zl>${t} (${p.cats[k].length})</div>`+(CC[p.id+'|'+k]?p.cats[k].map(n=>foodRow(n,!canEdit(p)?'':`<button class=x data-rm="${p.id}|${k}|${esc(n)}">✕</button>`,`data-pid="${p.id}" data-cat="${k}"`)).join(''):`<div class=igrid>${p.cats[k].map(n=>icoHtml(n,p.id,k)).join('')}</div>`)+`</div>`).join('')+`</div>`).join('')+'</div>';
+ +CATS.map(([k,t])=>`<div class=zone data-pid="${p.id}" data-cat="${k}"><button class="zt cc" data-cc="${p.id}|${k}" title="${isOpen(p.id,k)?'Collapse':'Expand'} — ${p.cats[k].length} dishes">${isOpen(p.id,k)?'▾':'▸'}</button><div class=zl>${t} (${p.cats[k].length})</div>`+(isOpen(p.id,k)?p.cats[k].map(n=>foodRow(n,!canEdit(p)?'':`<button class=x data-rm="${p.id}|${k}|${esc(n)}">✕</button>`,`data-pid="${p.id}" data-cat="${k}"`)).join(''):`<div class=igrid>${p.cats[k].map(n=>icoHtml(n,p.id,k)).join('')}</div>`)+`</div>`).join('')+`</div>`).join('')+'</div>';
  if($('#add'))$('#add').onclick=()=>act.add($('#nm').value.trim());
  $('#find').onclick=()=>{const v=$('#nm').value.trim().toLowerCase();if(!v)return;const m=S.people.find(p=>p.name.toLowerCase()===v)||S.people.find(p=>p.name.toLowerCase().includes(v));if(m){$('#msg').textContent='';flash(m.id)}else $('#msg').textContent='Nobody found for “'+$('#nm').value.trim()+'”'};
  $('#nm').onkeydown=e=>{if(e.key==='Enter'&&$('#add'))$('#add').click()};
@@ -118,7 +122,7 @@ function render(){renderCat();if(LOADING)$('#view').innerHTML='<div class=loadin
 $('#t1').onclick=()=>{tab=1;render()};$('#t2').onclick=()=>{tab=2;render()};
 $('#q').oninput=e=>{filter=e.target.value;renderCat();applySearch()};
 document.addEventListener('click',e=>{const t=e.target;let d;
- if(d=t.closest('[data-ccall]')){toggleAllCC()}
+ if(d=t.closest('[data-cca]')){toggleAllCat(d.dataset.cca)}
  else if(d=t.closest('[data-cc]')){toggleCC(d.dataset.cc)}
  else if(d=t.closest('[data-rm]')){const[id,k,n]=d.dataset.rm.split('|');const p=S.people.find(p=>p.id===id);if(p)act.remove(p,k,n)}
  else if(d=t.closest('[data-delp]')){if(isAdm()&&confirm('Remove this person'+(ONLINE?' and their account':'')+'?'))act.delp(d.dataset.delp)}
@@ -195,9 +199,10 @@ async function q(pr){const r=await pr;if(r.error){toast(r.error.message);return 
 const rpc=(fn,a)=>q(sb.rpc(fn,a));
 // column (category) collapse state + dinner menu view, remembered locally only
 let CC={},MV=true;try{CC=JSON.parse(localStorage.getItem('ecochef_cc2'))||{};MV=localStorage.getItem('ecochef_menu')!=='0'}catch(e){}
-const allOpen=()=>S.people.length>0&&S.people.every(p=>CATS.every(([k])=>CC[p.id+'|'+k]));
-const toggleAllCC=()=>{const v=!allOpen();S.people.forEach(p=>CATS.forEach(([k])=>{CC[p.id+'|'+k]=v}));try{localStorage.setItem('ecochef_cc2',JSON.stringify(CC))}catch(e){}render()};
-const toggleCC=k=>{CC[k]=!CC[k];try{localStorage.setItem('ecochef_cc2',JSON.stringify(CC))}catch(e){}render()};
+const isOpen=(pid,k)=>{const v=CC[pid+'|'+k];return v===undefined?k!=='ok':v};
+const allOpenCat=k=>S.people.length>0&&S.people.every(p=>isOpen(p.id,k));
+const toggleAllCat=k=>{const v=!allOpenCat(k);S.people.forEach(p=>{CC[p.id+'|'+k]=v});try{localStorage.setItem('ecochef_cc2',JSON.stringify(CC))}catch(e){}render()};
+const toggleCC=k=>{const[pid,c]=k.split('|');CC[k]=!isOpen(pid,c);try{localStorage.setItem('ecochef_cc2',JSON.stringify(CC))}catch(e){}render()};
 const colsCss=()=>'130px '+CATS.map(([k])=>CC[k]?'minmax(0,2fr)':'minmax(76px,1fr)').join(' ');
 const icoHtml=(n,pid,k)=>`<span class=ico data-food="${esc(n)}" data-pid="${pid}" data-cat="${k}" title="${esc(n)} — ${tip(FOODS[n])}">${icon(n)}</span>`;
 // optimistic updates: change the UI at once, send to the server in the background (in order); on error -> message + resync
