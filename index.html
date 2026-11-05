@@ -6,26 +6,38 @@
 *{box-sizing:border-box;scrollbar-width:thin;scrollbar-color:#3a4358 #12151c}html{background:#12151c}
 @supports not (scrollbar-color:auto){::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-track{background:#12151c}::-webkit-scrollbar-thumb{background:#3a4358;border-radius:6px;border:2px solid #12151c}::-webkit-scrollbar-thumb:hover{background:#505b76}}
 body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.4 system-ui,sans-serif}
-header{display:flex;gap:12px;align-items:center;padding:10px 16px;background:#0c0f14;position:sticky;top:0;z-index:5;flex-wrap:wrap}
+header{display:flex;gap:12px;align-items:center;padding:10px 16px;background:#0c0f14;position:sticky;top:0;z-index:8;flex-wrap:wrap}
 h1{font-size:18px;margin:0;color:var(--ac)}nav button,.btn{background:var(--pn2);color:var(--tx);border:1px solid #3a4358;border-radius:6px;padding:6px 12px;cursor:pointer}
 nav button.on,.btn.pri{background:var(--ac);color:#fff;border-color:var(--ac)}
 main{display:grid;grid-template-columns:270px 1fr;gap:12px;padding:12px}
 main.collapsed{grid-template-columns:44px 1fr}@media(max-width:850px){main,main.collapsed{grid-template-columns:1fr}}
 .panel{background:var(--pn);border-radius:8px;padding:10px}
-#cat{padding-top:0;max-height:calc(100vh - var(--hh,52px) - 24px);overflow:auto;position:sticky;top:calc(var(--hh,52px) + 12px)}
+#cat{padding-top:0;max-height:calc(100vh - var(--hh,52px) - 24px);overflow:auto;position:sticky;top:calc(var(--hh,52px) + 12px);align-self:start;z-index:6}
 
-.phead,.prow{display:grid;grid-template-columns:130px repeat(4,minmax(0,1fr));gap:6px}
+.phead,.prow{display:grid;grid-template-columns:var(--cols,130px repeat(5,minmax(0,1fr)));gap:6px}
 .phead{position:sticky;top:calc(var(--hh,52px) + 12px + var(--rh,0px));z-index:3;background:var(--bg);padding:10px 6px 6px;font-size:12px;color:var(--mu);font-weight:600}
 .prow{padding:6px;margin:6px 0;align-items:start}
 .pname{display:flex;flex-direction:column;gap:2px;padding:2px 4px}.pn{display:flex;justify-content:space-between;align-items:center;gap:4px;word-break:break-word}.pname small{color:var(--mu)}
 @keyframes fl{0%{box-shadow:0 0 0 2px var(--ac);background:#34407a}100%{box-shadow:0 0 0 2px transparent;background:var(--pn)}}.flash{animation:fl 2.4s ease-out}
-@media(max-width:900px){.phead{display:none}.prow{grid-template-columns:1fr 1fr}.pname{grid-column:1/-1}.zone h4{display:block}}
+@media(max-width:900px){.prow{grid-template-columns:1fr 1fr}.pname{grid-column:1/-1}.zone h4{display:block}}
 .ghost{position:fixed;pointer-events:none;z-index:100;opacity:.92;box-shadow:0 6px 18px #000a;margin:0}.dragsrc{opacity:.35}body.dragging{user-select:none;cursor:grabbing}.seg{display:inline-flex}.seg button{background:var(--pn2);color:var(--tx);border:1px solid #3a4358;padding:6px 12px;cursor:pointer}.seg button:first-child{border-radius:6px 0 0 6px}.seg button:last-child{border-radius:0 6px 6px 0}.seg button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
 #modal{position:fixed;inset:0;background:#000a;z-index:200;display:grid;place-items:center}#modal[hidden]{display:none}.mbox{background:var(--pn);border-radius:10px;padding:16px;width:min(620px,94vw);max-height:86vh;overflow:auto}.mbox h3{margin:0 0 8px}.mbox .row{margin:10px 0}.mbox td,.mbox th{text-align:left}#toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#000d;padding:8px 14px;border-radius:8px;z-index:300}
 .cooked{border-color:var(--vi)!important}.ckd,.ck{color:var(--vi)}.ck{font-size:14px}.chead{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}#ctog{color:var(--tx);font-size:14px}
 #cat.col{padding:8px 4px}.col .chead{flex-direction:column;gap:10px;margin:0}.col .chead b{writing-mode:vertical-rl}.col #q,.col .who,.col #catlist{display:none}
 .loading{display:flex;align-items:center;justify-content:center;gap:12px;min-height:50vh;color:var(--mu);font-size:15px}.loading i{width:20px;height:20px;border:3px solid #3a4358;border-top-color:var(--ac);border-radius:50%;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
 table img,table .ph{width:20px;height:20px;object-fit:contain;vertical-align:middle;margin-right:2px}table .ph{display:inline-grid;font-size:13px}
+.cc{cursor:pointer;user-select:none}.phead .cc:hover,.zone h4.cc:hover{color:var(--tx)}.igrid{display:flex;flex-wrap:wrap;gap:2px}
+.ico{display:inline-flex;border:1px solid transparent;border-radius:6px;padding:1px;cursor:grab}.ico img,.ico .ph{width:26px;height:26px;object-fit:contain}.ico .ph{display:grid;font-size:16px}
+.tools{float:right;display:flex;gap:12px;align-items:center}
+.sw{display:inline-flex;align-items:center;gap:8px;cursor:pointer;color:var(--mu);font-size:13px}.sw input{display:none}.sw i{width:34px;height:19px;border-radius:10px;background:#3a4358;position:relative;transition:.15s}.sw i::after{content:'';position:absolute;top:2px;left:2px;width:15px;height:15px;border-radius:50%;background:#fff;transition:.15s}.sw input:checked+i{background:var(--ac)}.sw input:checked+i::after{left:17px}
+.menu{background:linear-gradient(180deg,#232a3a,var(--pn))}.menu h3{margin:0 0 10px;font-size:17px;text-align:center;padding-bottom:8px;border-bottom:1px solid #2f3748}
+.mgrid{display:grid;gap:8px}.mi{display:flex;align-items:center;gap:12px;background:var(--pn2);border-radius:10px;padding:8px 12px;border:1px solid transparent}
+.mic img,.mic .ph{width:44px;height:44px;object-fit:contain;display:grid;place-items:center;font-size:26px}.mt{display:flex;flex-direction:column;flex:1;min-width:0}.mt>b{font-size:15px}.mt small{color:var(--mu);font-size:11px}
+.mi.cooked{border-color:var(--vi);background:#1f3a2c}.mi .ck{font-size:20px}.none{text-align:center;color:var(--mu);padding:14px}.mtot{margin-top:8px;text-align:center;color:var(--mu);font-size:12px}
+.chead{cursor:pointer;user-select:none}
+@media(max-width:850px){#cat{position:static;max-height:55vh}#cat.col{padding:6px 10px}.col .chead{flex-direction:row;justify-content:space-between;align-items:center}.col .chead b{writing-mode:horizontal-tb}}
+.zt{position:absolute;top:2px;right:3px;width:16px;height:16px;padding:0;border:0;background:none;color:var(--mu);cursor:pointer;font-size:12px;line-height:16px}.zt:hover{color:var(--tx)}.zl{display:none;font-size:12px;color:var(--mu);margin-bottom:3px}@media(max-width:900px){.zl{display:block}}
+.ico img{display:block}.phead .btn{padding:1px 7px;font-size:12px;margin-left:6px}@media(max-width:900px){.phead{display:grid;grid-template-columns:1fr}.phead span:not(:first-child){display:none}}
 .sb{position:sticky;top:0;z-index:2;background:var(--pn);padding:10px 0 6px}
 input,select{background:#0c0f14;color:var(--tx);border:1px solid #3a4358;border-radius:6px;padding:6px 8px}
 .food{display:flex;align-items:center;gap:6px;background:var(--pn2);border-radius:6px;padding:1px 5px;margin:2px 0;line-height:1.15;cursor:grab;border:1px solid transparent}
@@ -34,13 +46,13 @@ input,select{background:#0c0f14;color:var(--tx);border:1px solid #3a4358;border-
 .hl{border-color:var(--ac)!important;background:#3b4380!important}
 .people{display:block}#addbar{position:sticky;top:calc(var(--hh,52px) + 12px);z-index:4;margin-bottom:0}#addbar::before{content:'';position:absolute;left:0;right:0;top:-12px;height:12px;background:var(--bg)}.person h3{margin:0 0 6px;display:flex;justify-content:space-between;align-items:center}
 
-.zone{background:#12151c;border-radius:6px;min-height:44px;padding:5px;border:2px dashed transparent}.zone.over{border-color:var(--ac)}
-.zone h4{display:none;margin:0 0 3px;font-size:12px;color:var(--mu)}
+.zone{position:relative;background:#12151c;border-radius:6px;min-height:44px;padding:5px 22px 5px 5px;border:2px dashed transparent}.zone.over{border-color:var(--ac)}
+.zone h4{margin:0 0 3px;font-size:12px;color:var(--mu)}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}.chip{padding:4px 10px;border-radius:16px;background:var(--pn2);cursor:pointer;border:1px solid #3a4358}.chip.on{background:var(--ac);color:#fff}
 .pick{cursor:pointer}.pick.sel{border-color:var(--vi)}
 table{border-collapse:collapse;width:100%;font-size:13px}td,th{padding:3px 6px;border-bottom:1px solid #2f3748;text-align:right}td:first-child,th:first-child{text-align:left}
 .c{color:var(--ca)}.p{color:var(--pr)}.f{color:var(--fa)}.v{color:var(--vi)}.warn{color:#f99}
-.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.grid2{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(360px,100%),1fr));gap:10px}.items{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:0 6px}.gt{font-size:12px;color:var(--mu);margin-top:4px}.tot{margin-top:6px}.who{font-size:12px;color:var(--mu);min-height:34px;margin-top:6px}.who b{color:var(--tx)}.hl2{box-shadow:0 0 0 2px var(--ac)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.grid2{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(280px,100%),1fr));gap:10px}.grid2>.panel{display:flex;flex-direction:column}.grid2 .tot,.grid2 .mtot{margin-top:auto}.grid2 .tot{padding-top:8px}.items{display:block}.gt{font-size:12px;color:var(--mu);margin-top:4px}.tot{margin-top:6px}.who{font-size:12px;color:var(--mu);min-height:34px;margin-top:6px}.who b{color:var(--tx)}.hl2{box-shadow:0 0 0 2px var(--ac)}
 </style></head><body>
 <header><h1>🍲 ECO — Chef's Book</h1><nav><button id="t1" class="on">People &amp; tastes</button> <button id="t2">Dinner party</button></nav><span class="seg"><button id="mL" class="on">Local</button><button id="mO">Online</button></span><button class="btn" id="acct" hidden></button><button class="btn" id="refr" hidden title="Reload online data">⟳</button>
 <span style="color:var(--mu);font-size:12px">Data: wiki.play.eco (Σ≥24, ≥300 kcal). <b class=c>C</b> carbs · <b class=p>P</b> protein · <b class=f>F</b> fat · <b class=v>V</b> vitamins</span></header>
@@ -49,11 +61,11 @@ table{border-collapse:collapse;width:100%;font-size:13px}td,th{padding:3px 6px;b
 <script>
 const RAW=`Baked Agave|14|2|4|8|700;Pupusas|6|11|9|14|900;Vegetable Medley|8|4|7|17|900;Smooth Gut Noodle Roll|19|15|9|1|1200;Huckleberry Fritter|16|0|20|8|900;Baked Heart Of Palm|12|6|4|6|700;Camas Bulb Bake|12|7|5|4|700;Basic Salad|18|6|4|10|800;Charred Sausage|0|10|14|0|700;Clam Chowder|16|15|3|11|800;Wild Stew|10|2|6|12|1100;Fried Vegetables|11|3|8|2|560;Tasty Tropical Pizza|21|6|12|11|1200;Shark Fillet Soup|10|15|11|4|1400;Meat Pie|18|4|20|2|1300;Crimson Salad|13|7|8|28|1200;Baked Tomato|16|1|5|6|700;Corn Fritters|13|4|22|8|500;Baked Meat|0|17|13|0|700;Bison Chow Fun|16|13|20|8|1450;Pineapple Friend Rice|20|9|12|12|720;Baked Roast|4|16|10|4|1000;Camas Bread|13|5|11|7|800;Elk Taco|15|8|22|6|700;Fried Hearts Of Palm|13|3|6|2|750;Wild Mix|15|6|4|21|800;Elk Wellington|10|26|22|4|1450;Bear S U P R E M E|6|22|23|9|1250;Vegetable Stock|11|1|2|11|700;Vegetable Soup|12|4|7|19|1200;Autumn Stew|13|8|5|12|1200;Bearclaw|14|4|21|7|850;Pirozhok|14|19|10|4|850;Bread|23|6|4|2|750;Seared Meat|4|19|17|7|600;Phad Thai|9|11|19|5|1200;Topped Porridge|10|4|0|10|700;Campfire Stew|5|10|9|4|1200;Taro Fries|10|2|20|0|600;Sweet Salad|18|9|7|22|1200;Sweet Deer Jerky|4|22|6|3|600;Worldly Donut|15|2|17|2|750;Stuffed Turkey|17|24|16|7|1600;Spiky Roll|20|17|7|2|1300;Baked Corn|12|3|2|11|700;Jungle Campfire Salad|11|4|3|10|900;Simmered Meat|6|18|13|5|900;Beet Campfire Salad|8|4|3|13|900;Sensuous Sea Pizza|28|11|7|4|1200;Seeded Camas Roll|20|2|13|16|1400;Meaty Stew|6|13|10|1|1100;Roast Pumpkin|23|2|2|7|1400;Fried Hare Haunches|6|15|27|4|750;Fried Tomatoes|11|3|8|2|750;Kelpy Crab Roll|22|13|11|5|1350;Fish N Chips|20|10|20|0|1000;Agouti Enchiladas|20|8|27|3|800;Baked Taro|8|6|2|12|700;Campfire Roast|0|16|12|0|1000;Boiled Sausage|0|27|22|0|600;Field Campfire Stew|14|4|8|4|1100;Mochi|25|0|0|5|750;Root Campfire Stew|8|5|12|5|1100;Macarons|20|7|14|16|1000;Fruit Salad|12|4|3|19|900;Jungle Campfire Stew|8|8|11|3|1100;Fried Taro|14|1|8|1|750;Bannock|15|3|6|0|700;Fried Fiddleheads|11|3|6|4|750;Fried Camas|9|3|10|2|750;Fruit Tart|22|3|9|14|800;Hosomaki|21|19|5|8|700;Loaded Taro Fries|14|6|18|0|1200;Fruit Muffin|10|5|4|16|800;Huckleberry Pie|13|5|10|16|1300;Hearty Hometown Pizza|28|7|11|3|1200;Fantastic Forest Pizza|23|4|10|17|1250;Flatbread|17|8|3|2|500;Root Campfire Salad|8|5|4|11|950;Poke Bowl|21|10|11|7|1100;Crispy Bacon|0|18|26|0|800;Millionaires Salad|18|6|6|26|1000;Banh Xeo|26|17|10|4|1550;Fern Campfire Salad|9|5|1|13|900;Baked Beet|10|1|2|15|700`;
 const FOODS={};RAW.split(';').forEach(s=>{const a=s.split('|');FOODS[a[0]]={n:a[0],c:+a[1],p:+a[2],f:+a[3],v:+a[4],k:+a[5]}});
-const CATS=[['fav','Favorite (1)'],['del','Delicious'],['good','Good'],['unk','Unknown']];
+const CATS=[['fav','Favorite (1)'],['del','Delicious'],['good','Good'],['ok','OK'],['unk','Unknown']];
 const $=s=>document.querySelector(s),esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 let S={people:[],guests:[],picks:{},cooked:{}},tab=1,filter='',ONLINE=false,LOADING=false,ME=null,sb=null,L;
 try{const l=localStorage.getItem('ecochef');if(l)S=JSON.parse(l)}catch(e){}
-S.cooked=S.cooked||{};L=S;
+S.cooked=S.cooked||{};L=S;L.people.forEach(p=>p.cats.ok=p.cats.ok||[]);
 const save=()=>{if(ONLINE)return;try{localStorage.setItem('ecochef',JSON.stringify(S))}catch(e){}};
 const byName=(a,b)=>a.name.localeCompare(b.name,undefined,{sensitivity:'base',numeric:true});
 const uid=()=>Math.random().toString(36).slice(2,9);
@@ -70,9 +82,9 @@ function renderCat(){const q=filter.toLowerCase();$('#catlist').innerHTML=Object
 function flash(id){const el=document.querySelector('[data-person="'+id+'"]');if(!el)return;el.scrollIntoView({behavior:'smooth',block:'center'});el.classList.remove('flash');void el.offsetWidth;el.classList.add('flash')}
 function renderPeople(){
  S.people.sort(byName);
- $('#view').innerHTML=`<div class="panel row" id="addbar"><input id="nm" placeholder="Person's name">${isAdm()?'<button class="btn pri" id="add">+ Add</button>':''}<button class="btn" id="find">Find</button><span id="msg" style="color:var(--mu)">Drag dishes from the list on the left into the columns. You can also drag between columns.</span></div><div class=people><div class=phead><span>Person</span>`+CATS.map(([k,t])=>`<span>${t}</span>`).join('')+`</div>`
+ $('#view').innerHTML=`<div class="panel row" id="addbar"><input id="nm" placeholder="Person's name">${isAdm()?'<button class="btn pri" id="add">+ Add</button>':''}<button class="btn" id="find">Find</button><span id="msg" style="color:var(--mu)">Drag dishes from the list on the left into the columns. You can also drag between columns.</span></div><div class=people><div class=phead><span>Person<button class="btn" data-ccall title="Expand / collapse all categories for everyone">${allOpen()?'▾':'▸'} All</button></span>`+CATS.map(([k,t])=>`<span>${t}</span>`).join('')+`</div>`
  +S.people.map(p=>`<div class="panel prow" data-person="${p.id}"><div class=pname>${pnameHtml(p)}</div>`
- +CATS.map(([k,t])=>`<div class=zone data-pid="${p.id}" data-cat="${k}"><h4>${t}</h4>`+p.cats[k].map(n=>foodRow(n,!canEdit(p)?'':`<button class=x data-rm="${p.id}|${k}|${esc(n)}">✕</button>`,`data-pid="${p.id}" data-cat="${k}"`)).join('')+`</div>`).join('')+`</div>`).join('')+'</div>';
+ +CATS.map(([k,t])=>`<div class=zone data-pid="${p.id}" data-cat="${k}"><button class="zt cc" data-cc="${p.id}|${k}" title="${CC[p.id+'|'+k]?'Collapse':'Expand'} — ${p.cats[k].length} dishes">${CC[p.id+'|'+k]?'▾':'▸'}</button><div class=zl>${t} (${p.cats[k].length})</div>`+(CC[p.id+'|'+k]?p.cats[k].map(n=>foodRow(n,!canEdit(p)?'':`<button class=x data-rm="${p.id}|${k}|${esc(n)}">✕</button>`,`data-pid="${p.id}" data-cat="${k}"`)).join(''):`<div class=igrid>${p.cats[k].map(n=>icoHtml(n,p.id,k)).join('')}</div>`)+`</div>`).join('')+`</div>`).join('')+'</div>';
  if($('#add'))$('#add').onclick=()=>act.add($('#nm').value.trim());
  $('#find').onclick=()=>{const v=$('#nm').value.trim().toLowerCase();if(!v)return;const m=S.people.find(p=>p.name.toLowerCase()===v)||S.people.find(p=>p.name.toLowerCase().includes(v));if(m){$('#msg').textContent='';flash(m.id)}else $('#msg').textContent='Nobody found for “'+$('#nm').value.trim()+'”'};
  $('#nm').onkeydown=e=>{if(e.key==='Enter'&&$('#add'))$('#add').click()};
@@ -84,13 +96,18 @@ function allPrefs(p){return CATS.flatMap(([k])=>p.cats[k])}
 function renderDinner(){
  const gs=S.guests.map(id=>S.people.find(p=>p.id===id)).filter(Boolean).sort(byName);
  const pickRow=(n,pid,sel)=>{const f=FOODS[n],ck=S.cooked[pid+'|'+n];return `<div class="food pick ${sel?'sel':''} ${sel&&ck?'cooked':''}" data-food="${esc(n)}" data-pk="${pid}" title="${tip(f)}">${icon(n)}<span class=n>${esc(n)}<br><small>${tipH(f)}</small></span>${sel?(isAdm()?`<button class="x ck" data-ck="${pid}|${esc(n)}" title="Mark as cooked">${ck?'✔':'○'}</button>`:(ck?'<span class=ckd title=cooked>✔</span>':'')):''}</div>`};
- let h=`<div class=panel>${isAdm()?'<button class="btn" id="rst" style="float:right" title="Clear guests, picked dishes and cooked marks">Reset</button>':''}<b>Guests:</b><div class=chips>`+(S.people.slice().sort(byName).filter(p=>isAdm()||S.guests.includes(p.id)).map(p=>`<span class="chip ${S.guests.includes(p.id)?'on':''}" data-g="${p.id}">${esc(p.name)}</span>`).join('')||'<i style="color:var(--mu)">Add people first in the “People &amp; tastes” tab</i>')+`</div></div><div class=grid2 style="margin-top:10px">`;
- gs.forEach(p=>{const pk=S.picks[p.id]||[];const t=sum(pk);const prefs=allPrefs(p);
+ const menuItem=(n,pid)=>{const f=FOODS[n],ck=S.cooked[pid+'|'+n];return `<div class="mi ${ck?'cooked':''}" data-food="${esc(n)}" data-pk="${pid}"><span class=mic>${icon(n)}</span><span class=mt><b>${esc(n)}</b><small>${tipH(f)}</small></span>${isAdm()?`<button class="x ck" data-ck="${pid}|${esc(n)}" title="Mark as cooked">${ck?'✔':'○'}</button>`:(ck?'<span class=ckd title=cooked>✔</span>':'')}</div>`};
+ let h=`<div class=panel><span class=tools><label class=sw title="Show only the dishes chosen for the dinner"><input type=checkbox id=mv ${MV?'checked':''}><i></i>Menu view</label>${isAdm()?'<button class="btn" id="rst" title="Clear guests, picked dishes and cooked marks">Reset</button>':''}</span><b>Guests:</b><div class=chips>`+(S.people.slice().sort(byName).filter(p=>isAdm()||S.guests.includes(p.id)).map(p=>`<span class="chip ${S.guests.includes(p.id)?'on':''}" data-g="${p.id}">${esc(p.name)}</span>`).join('')||'<i style="color:var(--mu)">Add people first in the “People &amp; tastes” tab</i>')+`</div></div><div class=grid2 style="margin-top:10px">`;
+ gs.forEach(p=>{const pk=S.picks[p.id]||[],t=sum(pk);
+  const tot=`<table class=tot><tr><th>Total</th>${NH}</tr><tr><td>${pk.length} dishes</td>${nut(t)}</tr></table>`;
+  if(MV){h+=`<div class="panel menu"><h3>${esc(p.name)}</h3>`+(pk.length?`<div class=mgrid>${[...pk].sort().map(n=>menuItem(n,p.id)).join('')}</div><div class=mtot>${tipH(t)}</div>`:'<div class=none>No dishes chosen yet</div>')+'</div>';return}
+  const shown=CATS.filter(([k])=>k!=='ok').flatMap(([k])=>p.cats[k]);
   const grp=(title,arr)=>arr.length?`<div class=gt>${title}</div><div class=items>`+arr.map(n=>pickRow(n,p.id,pk.includes(n))).join('')+'</div>':'';
+  const okL=p.cats.ok.filter(n=>FOODS[n]).sort(),rest=Object.keys(FOODS).filter(n=>!okL.includes(n)).sort(),opt=n=>`<option>${esc(n)}</option>`;
   h+=`<div class=panel><h3 style="margin:0 0 4px">${esc(p.name)} <small style="color:var(--mu)">dishes: ${pk.length}${pk.length>3?' <span class=warn>(more than 3!)</span>':''}</small></h3>`
-   +CATS.map(([k,tt])=>grp(tt,p.cats[k])).join('')+grp('Other (picked from full list)',pk.filter(n=>!prefs.includes(n)))
-   +(isAdm()?`<div style="margin-top:6px"><select data-any="${p.id}"><option value="">+ any dish…</option>${Object.keys(FOODS).sort().map(n=>`<option>${esc(n)}</option>`).join('')}</select></div>`:'')
-   +`<table class=tot><tr><th>Total</th>${NH}</tr><tr><td>${pk.length} dishes</td>${nut(t)}</tr></table></div>`});
+   +CATS.filter(([k])=>k!=='ok').map(([k,tt])=>grp(tt,p.cats[k])).join('')+grp('Other (picked from full list)',pk.filter(n=>!shown.includes(n)))
+   +(isAdm()?`<div style="margin-top:6px"><select data-any="${p.id}"><option value="">+ any dish…</option>${okL.length?`<optgroup label="OK list">${okL.map(opt).join('')}</optgroup>`:''}<optgroup label="All dishes">${rest.map(opt).join('')}</optgroup></select></div>`:'')
+   +tot+`</div>`});
  h+='</div>';
  const cnt={};gs.forEach(p=>(S.picks[p.id]||[]).forEach(n=>cnt[n]=(cnt[n]||0)+1));
  const names=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a]);
@@ -101,15 +118,17 @@ function render(){renderCat();if(LOADING)$('#view').innerHTML='<div class=loadin
 $('#t1').onclick=()=>{tab=1;render()};$('#t2').onclick=()=>{tab=2;render()};
 $('#q').oninput=e=>{filter=e.target.value;renderCat();applySearch()};
 document.addEventListener('click',e=>{const t=e.target;let d;
- if(d=t.closest('[data-rm]')){const[id,k,n]=d.dataset.rm.split('|');const p=S.people.find(p=>p.id===id);if(p)act.remove(p,k,n)}
+ if(d=t.closest('[data-ccall]')){toggleAllCC()}
+ else if(d=t.closest('[data-cc]')){toggleCC(d.dataset.cc)}
+ else if(d=t.closest('[data-rm]')){const[id,k,n]=d.dataset.rm.split('|');const p=S.people.find(p=>p.id===id);if(p)act.remove(p,k,n)}
  else if(d=t.closest('[data-delp]')){if(isAdm()&&confirm('Remove this person'+(ONLINE?' and their account':'')+'?'))act.delp(d.dataset.delp)}
  else if(d=t.closest('[data-adm]')){if(isAdm())act.toggleAdmin(d.dataset.adm)}
  else if(d=t.closest('[data-g]')){if(isAdm())act.guest(d.dataset.g)}
  else if(d=t.closest('[data-ck]')){const[id,n]=d.dataset.ck.split('|');if(isAdm())act.cook(id,n)}
- else if(d=t.closest('[data-pk]')){if(isAdm())act.pick(d.dataset.pk,d.dataset.food)}
+ else if(d=t.closest('[data-pk]')){if(isAdm()&&!d.classList.contains('mi'))act.pick(d.dataset.pk,d.dataset.food)}
  else if(d=t.closest('#rst')){if(isAdm()&&confirm('Reset the dinner party?\nAll guests, picked dishes and cooked marks will be cleared.'))act.reset()}
  else if(d=t.closest('[data-undo]')){rpc('undo_log',{p_log:+d.dataset.undo}).then(r=>r&&showLog())}});
-document.addEventListener('change',e=>{const id=e.target.dataset.any;if(id&&e.target.value&&isAdm())act.pick(id,e.target.value,true)});
+document.addEventListener('change',e=>{if(e.target.id==='mv'){MV=e.target.checked;try{localStorage.setItem('ecochef_menu',MV?'1':'0')}catch(x){}render();return}const id=e.target.dataset.any;if(id&&e.target.value&&isAdm())act.pick(id,e.target.value,true)});
 // hover: highlight the same dish only in OTHER people's lists + show who has it
 const OWNED='[data-pid][data-food],[data-pk][data-food]';
 const catName=Object.fromEntries(CATS.map(([k,t])=>[k,t.replace(' (1)','')]));
@@ -127,7 +146,7 @@ function mark(){const z=DR&&DR.on?zoneAt(DR.x,DR.y):null;if(DR&&z!==DR.zone){DR.
 function endDrag(){if(!DR)return;DR.zone&&DR.zone.classList.remove('over');DR.ghost&&DR.ghost.remove();DR.src.classList.remove('dragsrc');document.body.classList.remove('dragging');DR=null}
 document.addEventListener('pointerdown',e=>{
  if(e.button!==0||e.pointerType==='touch'||tab!==1||e.target.closest('button'))return;
- const d=e.target.closest('.food[data-food]');if(!d||d.dataset.pk)return;
+ const d=e.target.closest('.food[data-food],.ico[data-food]');if(!d||d.dataset.pk)return;
  DR={n:d.dataset.food,src:d,sx:e.clientX,sy:e.clientY,x:e.clientX,y:e.clientY,on:false,ghost:null,zone:null};e.preventDefault()});
 document.addEventListener('pointermove',e=>{if(!DR)return;DR.x=e.clientX;DR.y=e.clientY;
  if(!DR.on){if(Math.hypot(DR.x-DR.sx,DR.y-DR.sy)<5)return;DR.on=true;
@@ -162,7 +181,7 @@ async function reload(silent){const m0=MUT;
  const r=await Promise.all(['people','prefs','dinner_guests','dinner_picks'].map(t=>sb.from(t).select('*')));
  const er=r.find(x=>x.error);if(er){toast(er.error.message);LOADING=false;render();return}
  const [a,b,c,d]=r.map(x=>x.data),{data:{user}}=await sb.auth.getUser();
- const P=a.map(x=>({id:x.id,name:x.name,admin:x.is_admin,claimed:!!x.user_id,uid:x.user_id,cats:{fav:[],del:[],good:[],unk:[]}})),by=Object.fromEntries(P.map(p=>[p.id,p]));
+ const P=a.map(x=>({id:x.id,name:x.name,admin:x.is_admin,claimed:!!x.user_id,uid:x.user_id,cats:{fav:[],del:[],good:[],ok:[],unk:[]}})),by=Object.fromEntries(P.map(p=>[p.id,p]));
  b.forEach(x=>by[x.person_id]&&FOODS[x.food]&&by[x.person_id].cats[x.cat].push(x.food));
  const picks={},cooked={};d.forEach(x=>{if(!FOODS[x.food])return;(picks[x.person_id]=picks[x.person_id]||[]).push(x.food);if(x.cooked)cooked[x.person_id+'|'+x.food]=1});
  const N={people:P,guests:c.map(x=>x.person_id),picks,cooked},m=user&&P.find(p=>p.uid===user.id),me=m?{pid:m.id,name:m.name,admin:m.admin}:null;
@@ -174,6 +193,13 @@ async function reload(silent){const m0=MUT;
  if(!RT)startRT()}
 async function q(pr){const r=await pr;if(r.error){toast(r.error.message);return null}await reload();return r.data===null?true:r.data}
 const rpc=(fn,a)=>q(sb.rpc(fn,a));
+// column (category) collapse state + dinner menu view, remembered locally only
+let CC={},MV=true;try{CC=JSON.parse(localStorage.getItem('ecochef_cc2'))||{};MV=localStorage.getItem('ecochef_menu')!=='0'}catch(e){}
+const allOpen=()=>S.people.length>0&&S.people.every(p=>CATS.every(([k])=>CC[p.id+'|'+k]));
+const toggleAllCC=()=>{const v=!allOpen();S.people.forEach(p=>CATS.forEach(([k])=>{CC[p.id+'|'+k]=v}));try{localStorage.setItem('ecochef_cc2',JSON.stringify(CC))}catch(e){}render()};
+const toggleCC=k=>{CC[k]=!CC[k];try{localStorage.setItem('ecochef_cc2',JSON.stringify(CC))}catch(e){}render()};
+const colsCss=()=>'130px '+CATS.map(([k])=>CC[k]?'minmax(0,2fr)':'minmax(76px,1fr)').join(' ');
+const icoHtml=(n,pid,k)=>`<span class=ico data-food="${esc(n)}" data-pid="${pid}" data-cat="${k}" title="${esc(n)} — ${tip(FOODS[n])}">${icon(n)}</span>`;
 // optimistic updates: change the UI at once, send to the server in the background (in order); on error -> message + resync
 let QCH=Promise.resolve(),PEND=0,MUT=0,DIRTY=false,RT=null,rtT=null;
 function opt(apply,req,after){MUT++;apply();render();PEND++;const run=async()=>{try{const r=await req();if(r.error){toast(r.error.message);DIRTY=true}else if(after)after();return r}finally{PEND--;if(!PEND&&DIRTY){DIRTY=false;reload()}}};return QCH=QCH.then(run,run)}
@@ -189,7 +215,7 @@ const act={
  place(p,n,c){if(!canEdit(p))return;const f=()=>placeFood(p,n,c);if(ONLINE)return opt(f,()=>sb.rpc('set_pref',{p_person:sid(p),p_food:n,p_cat:c}));f();save();render()},
  remove(p,k,n){if(!canEdit(p))return;const f=()=>{p.cats[k]=p.cats[k].filter(x=>x!==n)};if(ONLINE)return opt(f,()=>sb.rpc('set_pref',{p_person:sid(p),p_food:n,p_cat:null}));f();save();render()},
  add(v){if(!v||!isAdm())return;if(S.people.some(p=>p.name.toLowerCase()===v.toLowerCase())){toast('This name already exists');return}
-  const t={id:ONLINE?'tmp'+uid():uid(),name:v,admin:false,claimed:false,cats:{fav:[],del:[],good:[],unk:[]}};
+  const t={id:ONLINE?'tmp'+uid():uid(),name:v,admin:false,claimed:false,cats:{fav:[],del:[],good:[],ok:[],unk:[]}};
   const f=()=>S.people.push(t);
   if(ONLINE)opt(f,async()=>{const r=await sb.rpc('admin_add_person',{p_name:v});if(!r.error)t.sid=r.data;return r});else{f();save();render()}
   if($('#nm'))$('#nm').focus({preventScroll:true});flash(t.id)},
@@ -227,7 +253,7 @@ async function showLog(){const r=await sb.from('audit_log').select('*').order('i
  modal(`<h3>Edit log</h3><div class=row><button class=btn id=mc>Close</button></div><table><tr><th>When</th><th>Who → whom</th><th>Dish</th><th>Change</th><th></th></tr>`+r.data.map(l=>`<tr><td>${new Date(l.at).toLocaleString()}</td><td>${esc(l.actor_name||'?')} → ${esc(l.target_name||'?')}</td><td>${esc(l.food||'')}</td><td>${l.old_cat||'—'} → ${l.new_cat||'—'}${l.note?' <small>('+esc(l.note)+')</small>':''}</td><td>${l.undone?'undone':(l.food?`<button class=btn data-undo="${l.id}">Undo</button>`:'')}</td></tr>`).join('')+'</table>')}
 $('#mL').onclick=()=>setMode('local');$('#mO').onclick=()=>setMode('online');$('#acct').onclick=()=>ME?showAcct():showAuth();$('#refr').onclick=()=>reload().then(()=>toast('Refreshed'));
 const setCat=c=>{$('#cat').classList.toggle('col',c);document.querySelector('main').classList.toggle('collapsed',c);$('#ctog').textContent=c?'▶':'◀';$('#ctog').title=c?'Show dishes':'Hide dishes';try{localStorage.setItem('ecochef_cat',c?'1':'')}catch(e){}};
-$('#ctog').onclick=()=>setCat(!$('#cat').classList.contains('col'));
+document.querySelector('.chead').onclick=()=>setCat(!$('#cat').classList.contains('col'));
 try{if(localStorage.getItem('ecochef_cat'))setCat(true)}catch(e){}
 const sh=()=>document.documentElement.style.setProperty('--hh',document.querySelector('header').offsetHeight+'px');sh();addEventListener('resize',sh);
 if(localStorage.getItem('ecochef_mode')==='online')setMode('online');else render();
